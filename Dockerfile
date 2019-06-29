@@ -1,4 +1,4 @@
-FROM golang:1.12.6 AS builder
+FROM golang:1.12.6-alpine3.9 AS builder
 
 WORKDIR /go/src/github.com/kezmorris/gomessage
 COPY main.go .
