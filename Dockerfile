@@ -6,7 +6,8 @@ RUN go build .
 
 FROM alpine:latest
 
-COPY --from=builder /go/src/github.com/kezmorris/gomessage/gomessage /usr/bin/gomessage
+WORKDIR /root/
+COPY --from=builder /go/src/github.com/kezmorris/gomessage/gomessage .
 
 CMD ["gomessage"]
 
