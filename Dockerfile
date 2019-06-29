@@ -9,5 +9,5 @@ FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/kezmorris/gomessage/gomessage .
 
-CMD ["gomessage"]
+CMD ["./gomessage"]
 
