@@ -8,7 +8,5 @@ FROM alpine:latest
 
 COPY --from=builder /go/src/github.com/kezmorris/gomessage/gomessage /usr/bin/gomessage
 
-COPY entrypoint.sh /entrypoint.sh
-
 CMD ["./gomessage"]
 
