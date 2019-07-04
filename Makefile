@@ -24,5 +24,5 @@ clean:
 	rm -rf ${BINARY}
 
 docker: 
-	docker build . -f Dockerfile
+	docker build . -f Dockerfile -t $(IMAGE_NAME):$(TAG_NAME)
 	docker push $(IMAGE_NAME):$(TAG_NAME)

@@ -10,4 +10,5 @@ WORKDIR /root/
 COPY --from=builder /go/src/github.com/kezmorris/gomessage/gomessage .
 
 CMD ["./gomessage"]
+EXPOSE 8001
 
