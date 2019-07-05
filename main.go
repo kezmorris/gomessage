@@ -40,7 +40,7 @@ func listenLoop(conn net.Conn) error {
 	for {
 		message, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			return fmt.Errorf("Error whilst listening, ", err)
+			return fmt.Errorf("Error whilst listening, %v", err)
 		}
 		log.Print("Message Received:", string(message))
 
