@@ -1,2 +1,6 @@
+#Binaries
 gomessage
 main
+
+#Go leftovers
+go.sum

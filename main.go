@@ -3,26 +3,37 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"strings"
 )
 
+// Basic flow: The client will signal the main port (8001) with it's name, asking for a session.
+// The server will respond with a port for the client to connect to.
+// If the users group doesn't have a session, it will make one. If it does, it will simply send
+// the port for that session. Multiple messages may be sent.
+
+// The hard part here, is making this all work statelessly. I think that perhaps the initial
+// server will be a lone pod, with a connected (or local DB), and each session will be stateful,
+// and started up by the server.
+
 func main() {
 	log.Printf("Starting listener server")
-	conn, err := setup()
+	conn, err := setup(8001)
 	if err != nil {
 		log.Panicf("Error while setting up: %v", err)
 	}
 	log.Printf("Setup listener successfully.")
-	err = listenLoop(conn)
+	result, err := doSession(conn)
 	if err != nil {
-		log.Panicf("Error while listening: %v", err)
+		log.Panicf("Session closed: %v", err)
 	}
+	log.Printf(result)
 }
 
-func setup() (net.Conn, error) {
-	ln, err := net.Listen("tcp", ":8001")
+func setup(port int) (net.Conn, error) {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to during net.Listen: %v", err)
 
@@ -34,13 +45,17 @@ func setup() (net.Conn, error) {
 	return conn, nil
 }
 
-func listenLoop(conn net.Conn) error {
+func doSession(conn net.Conn) (string, error) {
 	log.Printf("Starting to listen..")
 
 	for {
 		message, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
-			return fmt.Errorf("Error whilst listening, %v", err)
+			if err == io.EOF {
+				break
+			} else {
+				return "", fmt.Errorf("Error whilst listening, %v", err)
+			}
 		}
 		log.Print("Message Received:", string(message))
 
@@ -48,4 +63,5 @@ func listenLoop(conn net.Conn) error {
 		conn.Write([]byte(newmessage + "\n"))
 
 	}
+	return "Completed.", nil
 }
