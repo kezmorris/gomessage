@@ -1,5 +1,6 @@
 #Binaries
-gomessage
+gomessage*
+bin/
 main
 
 #Go leftovers
