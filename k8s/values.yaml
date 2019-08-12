@@ -4,12 +4,10 @@
 
 replicaCount: 1
 
-image:
-  repository: morriski/gomessage
-  tag: latest-master
-  pullPolicy: Always
+image: morriski/gomessage:latest-master
+pullPolicy: Always
 
 service:
   type: LoadBalancer
-  port: 80
+  port: 8001
 

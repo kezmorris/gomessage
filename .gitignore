@@ -1,5 +1,7 @@
-gomessage
+#Binaries
+gomessage*
+bin/
 main
 
-go.sum
 bin/*
+go.sum
