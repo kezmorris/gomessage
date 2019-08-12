@@ -1,0 +1,14 @@
+apiVersion: skaffold/v1beta13
+kind: Config
+build:
+  artifacts:
+  - image: morriski/gomessage
+deploy:
+  helm:
+    releases:
+      - name: gomessage  
+        chartPath: k8s/
+        valuesFiles: 
+          - k8s/values.yaml
+        values:
+          image: morriski/gomessage
