@@ -1,2 +1,5 @@
 gomessage
 main
+
+go.sum
+bin/*
