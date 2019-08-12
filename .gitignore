@@ -1,2 +1,7 @@
-gomessage
+#Binaries
+gomessage*
+bin/
 main
+
+#Go leftovers
+go.sum
