@@ -1,108 +1,76 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"log"
 	"net"
-	"os"
-	"sync"
-	"time"
+	"strings"
 )
 
-// Server object to serve
+// Server object to listen and serve
 type Server struct {
 	listener net.Listener
-	quit     chan bool
-	exited   chan bool
 }
 
-// NewServer creates a new server object
-func NewServer() *Server {
-	addr, err := net.ResolveTCPAddr("tcp4", ":9999")
-	// TODO: return nil, error and decide how to handle it in the calling function
+// NewServer creates a new server
+func NewServer(port int) (*Server, error) {
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
 	if err != nil {
-		fmt.Println("Failed to resolve address", err.Error())
-		os.Exit(1)
+		return nil, fmt.Errorf("Failed to during net.Listen: %v", err)
+
 	}
 
-	// TODO: return nil, error and decide how to handle it in the calling function
-	listener, err := net.Listen("tcp", addr.String())
-	if err != nil {
-		fmt.Println("Failed to create listener", err.Error())
-		os.Exit(1)
-	}
-
-	// TODO: do not use this syntax, add the field names
 	srv := &Server{
-		listener,
-		make(chan bool),
-		make(chan bool),
+		ln,
 	}
-	// TODO: no need to export Serve as it is only called internally
-	go srv.Serve()
-	return srv
+	return srv, nil
 }
 
-// Serve serves the stuff.
-func (srv *Server) Serve() {
-	var handlers sync.WaitGroup
+// Serve serves as the server
+func (srv *Server) Serve() error {
 	for {
-		select {
-		case <-srv.quit:
-			fmt.Println("Shutting down...")
-			srv.listener.Close()
-			handlers.Wait()
-			close(srv.exited)
-			return
-		default:
-			//fmt.Println("Listening for clients")
-			srv.listener.SetDeadline(time.Now().Add(1e9))
-			conn, err := srv.listener.Accept()
-			if err != nil {
-				if opErr, ok := err.(*net.OpError); ok && opErr.Timeout() {
-					continue
-				}
-				fmt.Println("Failed to accept connection:", err.Error())
-			}
-			handlers.Add(1)
-			go func() {
-				// FIXME: handle returned error here (just log it)
-				// FIXME: determine ID (why?)
-				srv.handleConnection(conn, 0)
-				handlers.Done()
-			}()
+
+		conn, err := srv.listener.Accept()
+		if err != nil {
+			return fmt.Errorf("Error accepting connection: %v", err)
 		}
+
+		log.Printf("Setup listener successfully. Listening to c %v", conn.RemoteAddr().(*net.TCPAddr).Port)
+		// Create a server object with this port
+		go srv.handleConn(conn)
 	}
 }
+func (srv *Server) handleConn(conn net.Conn) error {
+	log.Printf("Starting to listen..")
 
-func (srv *Server) handleConnection(conn net.Conn, id int) error {
-	fmt.Println("Accepted connection from", conn.RemoteAddr())
+	for {
+		message, err := bufio.NewReader(conn).ReadString('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				return fmt.Errorf("Error whilst listening, %v", err)
+			}
+		}
+		log.Print("Message Received:", string(message))
 
-	defer func() {
-		fmt.Println("Closing connection from", conn.RemoteAddr())
-		conn.Close()
-	}()
+		newmessage := strings.ToUpper(message)
+		conn.Write([]byte(newmessage + "\n"))
 
-	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
-	if err != nil {
-		fmt.Println("Read error", err.Error())
-		return err
 	}
 	return nil
 }
 
-// Stop stops the stuff
-func (srv *Server) Stop() {
-	fmt.Println("Stop requested")
-	// XXX: You cannot use the same channel in two directions.
-	//      The order of operations on the channel is undefined.
-	close(srv.quit)
-	<-srv.exited
-	fmt.Println("Stopped successfully")
-}
-
 func main() {
-	srv := NewServer()
-	time.Sleep(2 * time.Second)
-	srv.Stop()
+	log.Printf("Starting listener server")
+
+	server, err := NewServer(8001)
+	if err != nil {
+		log.Panicf("Failed to during ln. Accept: %v", err)
+	}
+
+	server.Serve()
+
 }
