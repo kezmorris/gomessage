@@ -30,6 +30,8 @@ func NewServer(port int) (*Server, error) {
 
 // Serve serves as the server
 func (srv *Server) Serve() error {
+	messages := NewLogger()
+	messages.Run()
 	for {
 
 		conn, err := srv.listener.Accept()
@@ -37,12 +39,12 @@ func (srv *Server) Serve() error {
 			return fmt.Errorf("Error accepting connection: %v", err)
 		}
 
-		log.Printf("Setup listener successfully. Listening to c %v", conn.RemoteAddr().(*net.TCPAddr).Port)
-		// Create a server object with this port
-		go srv.handleConn(conn)
+		log.Printf("Setup listener successfully. New client: %v", conn.RemoteAddr().(*net.TCPAddr).Port)
+
+		go srv.handleConnection(conn, messages.logChan)
 	}
 }
-func (srv *Server) handleConn(conn net.Conn) error {
+func (srv *Server) handleConnection(conn net.Conn, logChan chan string) error {
 	log.Printf("Starting to listen..")
 
 	for {
@@ -54,12 +56,10 @@ func (srv *Server) handleConn(conn net.Conn) error {
 				return fmt.Errorf("Error whilst listening, %v", err)
 			}
 		}
-		log.Print("Message Received:", string(message))
-
-		newmessage := strings.ToUpper(message)
-		conn.Write([]byte(newmessage + "\n"))
+		logChan <- strings.TrimSpace(message)
 
 	}
+	log.Printf("Connection closed")
 	return nil
 }
 
