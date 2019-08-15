@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{ .Chart.Name}}
   labels:
-    app: gomessage-server
+    app: gomessage-operator
 spec:
   type: {{ .Values.service.type }}
   ports:

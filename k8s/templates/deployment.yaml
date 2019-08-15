@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: {{.Chart.Name}}
   labels:
-    app: gomessage-server
+    app: gomessage-operator
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

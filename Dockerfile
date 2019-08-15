@@ -2,7 +2,7 @@ FROM golang:1.12.6-alpine3.9 AS builder
 
 ENV GOPATH=/go/
 WORKDIR /go/src/github.com/kezmorris/gomessage/
-COPY server/* ./
+COPY operator/* ./
 RUN go build .
 #TODO: upx up in here?
 FROM alpine:latest
