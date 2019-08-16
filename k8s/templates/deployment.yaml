@@ -3,13 +3,14 @@ kind: Deployment
 metadata:
   name: {{.Chart.Name}}
   labels:
-    app: gomessage-operator
+    app: {{ .Chart.Name }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ .Chart.Name }}
       release: {{ .Release.Name }}
+  serviceAccount: {{ .Chart.Name }}
   template:
     metadata:
       labels:
