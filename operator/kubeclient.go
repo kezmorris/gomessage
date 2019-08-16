@@ -12,8 +12,8 @@ type KubeClient struct {
 	clientSet *kubernetes.Clientset
 }
 
-// CreateKubeClient creates and connectes a KubeClient object
-func (client *KubeClient) CreateKubeClient() (*KubeClient, error) {
+// NewKubeClient creates and connectes a KubeClient object
+func NewKubeClient() (*KubeClient, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, fmt.Errorf("Error getting cluster config: %v", err)
@@ -22,5 +22,5 @@ func (client *KubeClient) CreateKubeClient() (*KubeClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error creating clientset: %v", err)
 	}
-	return &KubeClient{clientSet: newclientset}, nil
+	return &KubeClient{newclientset}, nil
 }

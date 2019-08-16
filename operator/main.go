@@ -30,6 +30,11 @@ func NewOperator(port int) (*Operator, error) {
 // Serve serves as the Operator
 func (srv *Operator) Serve() error {
 	logman := NewLogger()
+	cs, err := NewKubeClient()
+	fmt.Printf("Got clientset: %v", cs)
+	if err != nil {
+		return fmt.Errorf("Error creating kubernetes client: %v", err)
+	}
 	logman.Run()
 	for {
 
@@ -78,7 +83,6 @@ func getSessionPort() (int, int) {
 
 func main() {
 	log.Printf("Starting operator")
-	cs := CreateKubeClient()
 	operator, err := NewOperator(8001)
 	if err != nil {
 		log.Panicf("Failed to during ln. Accept: %v", err)
