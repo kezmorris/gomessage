@@ -21,7 +21,6 @@ func NewOperator(port int) (*Operator, error) {
 		return nil, fmt.Errorf("Failed to during net.Listen: %v", err)
 
 	}
-
 	srv := &Operator{
 		ln,
 	}
@@ -79,7 +78,7 @@ func getSessionPort() (int, int) {
 
 func main() {
 	log.Printf("Starting operator")
-
+	cs := CreateKubeClient()
 	operator, err := NewOperator(8001)
 	if err != nil {
 		log.Panicf("Failed to during ln. Accept: %v", err)
