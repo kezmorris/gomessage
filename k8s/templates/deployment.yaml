@@ -27,3 +27,6 @@ spec:
             - name: connport
               containerPort: 8001
               protocol: TCP
+          env:
+            name: KUBECONFIG
+            value: IN_CLUSTER
