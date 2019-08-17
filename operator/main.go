@@ -97,12 +97,19 @@ func getSessionPort() (int, int) {
 }
 
 func (srv *Operator) doSomethingWithClient(client *KubeClient) {
+	var namespace string
+
+	if os.Getenv("NAMESPACE") != "" {
+		namespace = os.Getenv("NAMESPACE")
+	} else {
+		namespace = "" // Either the deployment is misconfigured or not running in cluster
+	}
 	for {
-		pods, err := client.clientset.CoreV1().Pods("").List(metav1.ListOptions{})
+		pods, err := client.clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{})
 		if err != nil {
 			srv.logger.Log(fmt.Sprintf("Error calling clientset: %v", err))
 		}
-		srv.logger.Log(fmt.Sprintf("There are %d pods in the cluster\n", len(pods.Items)))
+		srv.logger.Log(fmt.Sprintf("There are %d pods in this namespace\n", len(pods.Items)))
 		time.Sleep(20 * time.Second)
 	}
 }
