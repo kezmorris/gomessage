@@ -8,15 +8,13 @@ import (
 	"net"
 	"os"
 	"strings"
-	"time"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // Operator object to listen and serve
 type Operator struct {
-	listener net.Listener
-	logger   Logger
+	listener   net.Listener
+	logger     *Logger
+	kubeclient *KubeClient
 }
 
 // NewOperator creates a new Operator
@@ -26,31 +24,32 @@ func NewOperator(port int) (*Operator, error) {
 		return nil, fmt.Errorf("Failed to during net.Listen: %v", err)
 
 	}
+
 	logger := NewLogger()
 	logger.Run()
+
+	var client *KubeClient
+
+	if os.Getenv("KUBECONFIG") == "IN_CLUSTER" {
+		client, err = NewInClusterKubeClient(&logger)
+	} else {
+		client, err = NewKubeClient(&logger)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("Error creating kubernetes client: %v", err)
+	}
+	client.Run()
+
 	srv := &Operator{
 		ln,
-		logger,
+		&logger,
+		client,
 	}
 	return srv, nil
 }
 
 // Serve serves as the Operator
 func (srv *Operator) Serve() error {
-	var cs *KubeClient
-	var err error
-
-	if os.Getenv("KUBECONFIG") == "IN_CLUSTER" {
-		cs, err = NewInClusterKubeClient()
-	} else {
-		cs, err = NewKubeClient()
-	}
-	if err != nil {
-		return fmt.Errorf("Error creating kubernetes client: %v", err)
-	}
-
-	go srv.doSomethingWithClient(cs)
-
 	for {
 
 		conn, err := srv.listener.Accept()
@@ -86,32 +85,15 @@ func (srv *Operator) handleConnection(conn net.Conn) error {
 func (srv *Operator) createCallSession(conn net.Conn) {
 	connID := conn.RemoteAddr().(*net.TCPAddr).Port
 	srv.logger.Log(fmt.Sprintf("%v wants to connect", connID))
-	sessionPort, token := getSessionPort()
+	sessionPort, token := srv.getSessionPort()
 	srv.logger.Log(fmt.Sprintf("Directing %v to port %v", connID, sessionPort))
 	response := fmt.Sprintf("CONN %v %v", sessionPort, token)
 	conn.Write([]byte(response + "\n"))
 }
 
-func getSessionPort() (int, int) {
-	return 30001, 123456
-}
-
-func (srv *Operator) doSomethingWithClient(client *KubeClient) {
-	var namespace string
-
-	if os.Getenv("NAMESPACE") != "" {
-		namespace = os.Getenv("NAMESPACE")
-	} else {
-		namespace = "" // Either the deployment is misconfigured or not running in cluster
-	}
-	for {
-		pods, err := client.clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{})
-		if err != nil {
-			srv.logger.Log(fmt.Sprintf("Error calling clientset: %v", err))
-		}
-		srv.logger.Log(fmt.Sprintf("There are %d pods in this namespace\n", len(pods.Items)))
-		time.Sleep(20 * time.Second)
-	}
+func (srv *Operator) getSessionPort() (int, int) {
+	port := srv.kubeclient.RequestPort()
+	return port, 123456
 }
 
 func main() {
