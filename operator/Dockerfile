@@ -11,7 +11,7 @@ WORKDIR /go/src/github.com/kezmorris/gomessage-operator/
 
 RUN go get
 
-COPY operator/* /go/src/github.com/kezmorris/gomessage-operator/.
+COPY operator/*.go /go/src/github.com/kezmorris/gomessage-operator/
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -a -o /go/bin/gomessage-operator
 
 #TODO: upx up in here?

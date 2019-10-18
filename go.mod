@@ -16,6 +16,6 @@ require (
 	google.golang.org/appengine v1.5.0 // indirect
 	k8s.io/api v0.0.0-20191016225839-816a9b7df678
 	k8s.io/apimachinery v0.0.0-20191016225534-b1267f8c42b4
-	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/client-go v12.0.0
 	k8s.io/utils v0.0.0-20190809000727-6c36bc71fc4a // indirect
 )
