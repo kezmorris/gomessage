@@ -22,7 +22,7 @@ spec:
         - name: regcred
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image }}"
+          image: "{{ .Values.operator_image }}"
           imagePullPolicy: {{ .Values.pullPolicy }}
           ports:
             - name: connport
@@ -33,3 +33,5 @@ spec:
               value: "IN_CLUSTER"
             - name: NAMESPACE
               value: "{{ .Release.Namespace }}"
+            - name: CONF_IMAGE
+              value: "{{ .Values.conference_image }}"

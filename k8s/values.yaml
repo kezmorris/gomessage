@@ -4,10 +4,11 @@
 
 replicaCount: 1
 
-image: morriski/gomessage:latest-master
+operator_image: morriski/gomessage-operator:latest-master
 pullPolicy: Always
 
 service:
   type: LoadBalancer
   port: 8001
 
+conference_image: morriski/gomessage-conference:latest-master

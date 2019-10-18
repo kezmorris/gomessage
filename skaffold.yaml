@@ -2,7 +2,15 @@ apiVersion: skaffold/v1beta13
 kind: Config
 build:
   artifacts:
-  - image: morriski/gomessage
+  - image: morriski/gomessage-operator
+    context: .
+    docker:
+      dockerfile: ./operator/Dockerfile
+  - image: morriski/gomessage-conference
+    context: .
+    docker:
+      dockerfile: ./conference/Dockerfile
+
 deploy:
   helm:
     releases:
@@ -11,4 +19,5 @@ deploy:
         valuesFiles: 
           - k8s/values.yaml
         values:
-          image: morriski/gomessage
+          operator_image: morriski/gomessage-operator
+          conference_image: morriski/gomessage-conference
