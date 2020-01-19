@@ -12,9 +12,16 @@ import (
 
 // Operator object to listen and serve
 type Operator struct {
-	listener   net.Listener
-	logger     *Logger
-	kubeclient *KubeClient
+	listener    net.Listener
+	logger      *Logger
+	kubeclient  *KubeClient
+	conferences []*Conference
+}
+
+// Conference is a single call conference.
+type Conference struct {
+	port int
+	name string
 }
 
 // NewOperator creates a new Operator
@@ -82,13 +89,28 @@ func (srv *Operator) handleConnection(conn net.Conn) error {
 	return nil
 }
 
+// Flow:
+// Create call pod, giving it the token to be used for login
+// Send acknowledgement with port to connect to
+// Client will wait until pod is ready
+
 func (srv *Operator) createCallSession(conn net.Conn) {
 	connID := conn.RemoteAddr().(*net.TCPAddr).Port
 	srv.logger.Log(fmt.Sprintf("%v wants to connect", connID))
 	sessionPort, token := srv.getSessionPort()
 	srv.logger.Log(fmt.Sprintf("Directing %v to port %v", connID, sessionPort))
-	response := fmt.Sprintf("CONN %v %v", sessionPort, token)
+
+	newConference := srv.createConference(sessionPort, token)
+
+	srv.conferences.append(srv.conferences, newConference)
+
+	response := fmt.Sprintf("CONN %v %v %v", sessionPort, token, newConference)
 	conn.Write([]byte(response + "\n"))
+}
+
+func (srv *Operator) createConference(port int, token int) *Conference {
+	newConf := &Conference{}
+	return newConf
 }
 
 func (srv *Operator) getSessionPort() (int, int) {
